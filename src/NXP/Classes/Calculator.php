@@ -22,38 +22,46 @@ use NXP\Exception\UnknownVariableException;
  */
 class Calculator
 {
-    /**
-     * Calculate array of tokens in reverse polish notation
-     * @param  array                                       $tokens    Array of tokens
-     * @param  array                                       $variables Array of variables
-     * @return number                                      Result
-     * @throws \NXP\Exception\IncorrectExpressionException
-     * @throws \NXP\Exception\UnknownVariableException
-     */
-    public function calculate($tokens, $variables)
+  /**
+   * Calculate array of tokens in reverse polish notation
+   *
+   * @param  array $tokens    Array of tokens
+   * @param  array $variables Array of variables
+   *
+   * @return number                                      Result
+   * @throws \NXP\Exception\IncorrectExpressionException
+   * @throws \NXP\Exception\UnknownVariableException
+   */
+  public function calculate($tokens, $variables)
+  {
+    $stack = [];
+    foreach($tokens as $token)
     {
-        $stack = array();
-        foreach ($tokens as $token) {
-            if ($token instanceof TokenNumber) {
-                array_push($stack, $token);
-            }
-            if ($token instanceof TokenVariable) {
-                $variable = $token->getValue();
-                if (!array_key_exists($variable, $variables)) {
-                    throw new UnknownVariableException();
-                }
-                $value = $variables[$variable];
-                array_push($stack, new TokenNumber($value));
-            }
-            if ($token instanceof InterfaceOperator || $token instanceof TokenFunction) {
-                array_push($stack, $token->execute($stack));
-            }
+      if($token instanceof TokenNumber)
+      {
+        array_push($stack, $token);
+      }
+      if($token instanceof TokenVariable)
+      {
+        $variable = $token->getValue();
+        if(!array_key_exists($variable, $variables))
+        {
+          throw new UnknownVariableException();
         }
-        $result = array_pop($stack);
-        if (!empty($stack)) {
-            throw new IncorrectExpressionException();
-        }
-
-        return $result->getValue();
+        $value = $variables[$variable];
+        array_push($stack, new TokenNumber($value));
+      }
+      if($token instanceof InterfaceOperator || $token instanceof TokenFunction)
+      {
+        array_push($stack, $token->execute($stack));
+      }
     }
+    $result = array_pop($stack);
+    if(!empty($stack))
+    {
+      throw new IncorrectExpressionException();
+    }
+
+    return $result ? $result->getValue() : 0;
+  }
 }
